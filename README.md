@@ -18,7 +18,7 @@ sudo systemctl start ssh
 docker exec -it jenkins-master bash
 ```
 
-# Inside the container
+#### Inside the container
 ```bash
 mkdir -p /var/jenkins_home/.ssh
 chmod 700 /var/jenkins_home/.ssh
