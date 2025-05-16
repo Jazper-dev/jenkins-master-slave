@@ -10,7 +10,6 @@ pipeline {
             steps {
                 git branch: 'main', url: 'https://github.com/Jazper-dev/jenkins-master-slave.git'
             }
-
         }
 
         stage('Stop Old Containers') {
