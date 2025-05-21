@@ -31,6 +31,23 @@ services:
       - "5671:5672"
       - "15672:15672"
 
+  rabbitmq-exporter:
+    image: kbudde/rabbitmq-exporter
+    container_name: rabbitmq-exporter
+    ports:
+      - "15692:15692"
+    networks:
+      - microservice
+    restart: always
+    environment:
+      - RABBIT_URL=http://guest:guest@rabbitmq:15672
+      - OUTPUT_FORMAT=prometheus
+      - PUBLISH_PORT=15692
+    depends_on:
+      - rabbitmq
+
+
+
   note-db:
     image: postgres:13
     container_name: note-db
@@ -44,6 +61,51 @@ services:
     volumes:
       - note-data:/var/lib/postgresql/data
       - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+
+
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    networks:
+      - webproxy
+      - microservice  # เพิ่ม microservice network
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--web.external-url=http://localhost/prometheus'
+    ports:
+    - "9090:9090" 
+
+
+  pushgateway:
+    image: prom/pushgateway
+    container_name: pushgateway
+    networks:
+      - webproxy
+      - microservice  # เพิ่ม microservice network
+    ports:
+      - "9091:9091"
+
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    networks:
+      - microservice
+      - webproxy    # ✅ เพิ่มตรงนี้
+    ports:
+       - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana.ini:/etc/grafana/grafana.ini:ro
+    
+
+
+
 
   social-service:
     build: ./social-service
@@ -126,3 +188,5 @@ services:
 
 volumes:
   note-data:
+  rabbitmq_data:
+  grafana_data:

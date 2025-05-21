@@ -9,11 +9,17 @@ import { PiSignOutBold } from "react-icons/pi";
 import { Link, useNavigate } from "react-router-dom"
 import SUTHLOGO from "../../assets/logo.png"
 import { CgNotes } from "react-icons/cg";
+import NotificationBell from "../notification/notification";
+import { useUserInfo } from "../../decode/decodetoken";
+import { useUserID } from "../../decode/decodetoken";
+  
 
 const AppBar = () => {
   const navigate = useNavigate();// @ts-ignore
   const [username, setUsername] = useState<string | null>(null);
-
+  const [userId, setUserId] = useState<string | null>(null);
+  const userInfo = useUserInfo();
+  const uId = useUserID();
   useEffect(() => {
     const checkAuth = async () => {
       const token = localStorage.getItem('token');
@@ -22,6 +28,7 @@ const AppBar = () => {
       try {
         const payload = JSON.parse(atob(token.split('.')[1]));
         setUsername(payload.username || payload.name || payload.email); // รองรับหลายชื่อ field
+        setUserId(payload.userId || payload.sub || null); 
       } catch (error) {
         localStorage.removeItem('token');
         navigate('/auth');
@@ -48,11 +55,8 @@ const AppBar = () => {
     setAnchorMyAcc(null);
   };
 
-  const [anchorHardware, setAnchorHardware] = React.useState<null | HTMLElement>(null);// @ts-ignore
-  const openHardware = Boolean(anchorHardware);
-
-  const handleClickHardware = (event: React.MouseEvent<HTMLButtonElement>) => {
-    setAnchorHardware(event.currentTarget);
+  const handleClickHardware = () => {
+    navigate('/mypost'); 
   };
 
 
@@ -75,7 +79,9 @@ const AppBar = () => {
           </Button>
         </div>
 
-        <div className="part2 w-[40%] flex items-center justify-end">
+        <div className="part2 w-[40%] flex items-center justify-end gap-4">
+
+          <NotificationBell userId={userId || ""}/>
 
           <div className="relative">
             <div
@@ -122,8 +128,8 @@ const AppBar = () => {
                   </div>
                 </div>
                 <div className="info">
-                  <h3 className="text-[15px] font-[400] leading-5 ml-2">Tawunchai Burakhon</h3>
-                  <p className="text-[12px] font-[400] opacity-70 ml-3">admin-01@gmail.com</p>
+                  <h3 className="text-[15px] font-[400] leading-5 ml-2">{userInfo?.username}</h3>
+                  <p className="text-[12px] font-[400] opacity-70 ml-3">{userInfo?.email}{uId}</p>
                 </div>
               </MenuItem>
               <Divider />
